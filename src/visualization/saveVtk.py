@@ -82,6 +82,15 @@ def __MakeMultiFace(point_list:list,triangle_list:list):
             ug.InsertNextCell(pixel.GetCellType(), pixel.GetPointIds())    
     return ug
 
+def write_vtkPoint(points,file_name):
+    u1=__MakeMultiPoint(points)
+    writer = vtkXMLDataSetWriter()
+    writer.SetInputData(u1)
+    writer.SetFileName(file_name+'.point.vtu')
+    writer.Write()
+
+
+
 def write_vtk(file_name:str):
     u1=__MakeMultiPoint(point)
     u2=__MakeMultiLine(point,line)
@@ -101,5 +110,3 @@ def write_vtk(file_name:str):
     writer.SetFileName(file_name+'.face.vtu')
     writer.Write()    
     
-    
-write_vtk('0')

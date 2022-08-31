@@ -1,5 +1,5 @@
 import numpy as np
-
+import src.visualization.saveVtk as sv
 # default global values, can be changed.
 net_diameter = 110.0  # [m]
 net_height = 35  # [m]
@@ -22,4 +22,6 @@ def __gen_points():
     
 
 if __name__ == "__main__":
-    print(__gen_points())
+    point=__gen_points()
+    print(point)
+    sv.write_vtkPoint(point)
