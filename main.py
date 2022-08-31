@@ -6,7 +6,7 @@ import src.element.line as l
 import src.visualization.showMatrix as sm
 import src.element.quad as q
 import src.waterWave.regularWaves as ww
-geo.NN = 17
+geo.NN = 10
 geo.NT = 64
 
 
