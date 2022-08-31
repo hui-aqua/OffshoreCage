@@ -1,6 +1,6 @@
 import numpy as np
 import src.visualization.vtkVisualization as pv
-import src.geoMaker.circular as geo
+import src.geoMaker.oceanFarm1 as geo
 import src.visualization.saveVtk as sv
 import src.element.line as l
 import src.visualization.showMatrix as sm

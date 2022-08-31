@@ -1,0 +1,25 @@
+import numpy as np
+
+# default global values, can be changed.
+net_diameter = 110.0  # [m]
+net_height = 35  # [m]
+ver_section = 5  # 64
+cir_section = 8  # 17
+
+
+# private function
+def __gen_points():
+    point_one_cage = []
+    for j in range(ver_section+1):
+        for i in range(0, cir_section):
+            point_one_cage.append(
+                [net_diameter/2.0 * np.cos(i * 2 * np.pi / float(cir_section)),
+                 net_diameter/2.0 * np.sin(i * 2 * np.pi / float(cir_section)),
+                 - j * net_height / float(ver_section)])
+    return point_one_cage
+## todo: make connnection and also net panels for cage and moorinng lines
+
+    
+
+if __name__ == "__main__":
+    print(__gen_points())
