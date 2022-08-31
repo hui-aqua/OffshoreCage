@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import numpy as np
 import src.visualization.saveVtk as sv
 # default global values, can be changed.
