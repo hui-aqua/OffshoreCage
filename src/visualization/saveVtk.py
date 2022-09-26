@@ -92,6 +92,10 @@ def write_vtkPoint(points,file_name):
 
 
 def write_vtk(file_name:str):
+    """
+    The input is a file name (str).
+    This function is to save the file to vtk format
+    """
     u1=__MakeMultiPoint(point)
     u2=__MakeMultiLine(point,line)
     u3=__MakeMultiFace(point,face)
