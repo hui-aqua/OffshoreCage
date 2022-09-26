@@ -10,7 +10,7 @@ import src.waterWave.regularWaves as ww
 sv.point, sv.face = geo.gen_cage()
 sv.line = geo.gen_lines()
 
-print(point)
+print(sv.point)
 
 '''
 sv.write_vtk('0')
