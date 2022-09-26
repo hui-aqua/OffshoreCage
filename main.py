@@ -1,87 +1,141 @@
 import numpy as np
-import src.visualization.vtkVisualization as pv
+# import pyvista as pv
 import src.geoMaker.oceanFarm1 as geo
 import src.visualization.saveVtk as sv
 import src.element.line as l
-import src.visualization.showMatrix as sm
 import src.element.quad as q
-import src.waterWave.regularWaves as ww
 
-sv.point, sv.face = geo.gen_cage()
-sv.line = geo.gen_lines()
+# for circular cage
+# import src.case.circularCage as case
+# case.main()
+nodes=geo.nodes
+line=geo.all_line
+face=geo.netFace
 
-print(sv.point)
+# sv.write_vtk('initial',point=nodes,line=line,face=face)
+sv.write_vtk("initial",point=nodes,face=geo.netFace)
+sv.write_line_vtk("initial_main_frame",point=nodes,line=geo.main_frame)
+sv.write_line_vtk("initial_mooring_line",point=nodes,line=geo.mooring_line)
 
-'''
-sv.write_vtk('0')
-#pv.show_point(sv.point)
+# define structural properties
+num_bodyPoint=77 #31
+num_seg=110 #50
 
-#np.savetxt('point.out', sv.point)
-#np.savetxt('lines.out', sv.line, delimiter=',', fmt='%1u')
-#np.savetxt('surfs.out', sv.face, delimiter=',', fmt='%1u')
+m_body=5600000 #[kg] 4980760 
+l1=l.lines(geo.mooring_line,680e6,0.088) # Axial stiffness[MN] 680.81 (Chain) 235.44 (Fiber)
+l1.assign_length("10")
+
+# Main frame properties
+l2=l.lines(geo.top_cross_beam,10e9,2.05)
+l3=l.lines(geo.top_hor_beam,10e9,2.29)
+l4=l.lines(geo.mid_hor_beam,10e9,1)
+l5=l.lines(geo.bottom_hor_beam,10e9,2.05)
+l6=l.lines(geo.dia_beam,10e9,1)
+l7=l.lines(geo.side_column_wo_pontoon,10e9,2.8)
+l8=l.lines(geo.bottom_rad_beam,10e9,1.75)
+l9=l.lines(geo.side_column_w_pontoon,10e9,3.56)
+l10=l.lines(geo.pontoon_cylinder,10e9,12)
+l11=l.lines(geo.center_column,10e9,3.56)
+l12=l.lines(geo.center_pontoon_cylinder,10e9,17)
 
 
-# the submerged weight are attached to these points
-weight_point = [1088+4*i for i in range(16)]
-weight = 4.48  # [N]
+# 
+fixed_point=[num_bodyPoint+num_seg*i for i in range(8)]
 
-fixed_point = [i for i in range(64)]
-# ref KikkoNet: 0.59kg/m2
-# netting area=1.75*3.14159*1.5=8.24667375 [m2]
-# total netting mass=0.59*8.25= 4.865 kg
-point_mass = np.ones((len(sv.point),1))*4.865/len(sv.point)
-point_mass[weight_point] += weight/9.81
+xyz=np.array(nodes)
+dxyz=np.zeros_like(xyz)
+gravity=np.array([0,0,-9.81])
 
-position = np.array(sv.point)
-velocity = np.zeros_like(position)
-
-gravity = np.array([0, 0, -9.81])  # unit [ m /s2]
-
-hline_element=l.lines(hline,1e6,0.03)
-vline_element=l.lines(vline,1e6,0.03)
-# must check initial length
-print('hline length is ', hline_element.check_initial_lengths(position))
-print('vline length is ', vline_element.check_initial_lengths(position))
-
-quad_element=q.quads(sv.face,0.2)
 
 run_time = 10  # unit [s]
-dt = 4e-5    # unit [s]
+dt = 2e-2    # unit [s]
 
-uc=np.array([0.25,0,0])
-u=quad_element.map_velocity(uc)
-
-wave=ww.Airywave(0.05,0.95,10)
-
-# must check velocity reduction factor
-print('velocity reduction factor is ', quad_element.get_wake_factor(position,u))
-   
 # forward Euler (explicit)
 for i in range(int(run_time/dt)):       
-    # tension force on lines
-    spring_force = hline_element.calc_tension_force(position)
-    velocity += dt * hline_element.map_forces(spring_force) / point_mass
-    
-    spring_force = vline_element.calc_tension_force(position)
-    velocity += dt * vline_element.map_forces(spring_force) / point_mass
-    
-    # hydro force
-    u=quad_element.map_velocity(uc)
-    uw=quad_element.map_velocity(wave.get_velocity_at_nodes(position,i*dt))
-    u+=uw
-    hydro_force=quad_element.cal_dynamic_force(position,u)
-    velocity += dt * quad_element.map_force(hydro_force) / point_mass        
-    
+       
     # gravity force
-    velocity += dt*gravity
-
-    velocity[fixed_point] *= 0.0  # velocity restriction
+    dxyz += dt*gravity
+    
+    # boundary condition
+    dxyz[fixed_point] *= 0.0  # velocity restriction
+    
+    dxyz[xyz[:,2]<-150.0]*=np.array([1.0,1.0,0.0]) 
     # velocity[fixed_point] *= np.array([1.0,1.0,0.0])  # fixed on xy plane
-
-    position += dt*velocity
+    xyz += dt*dxyz
+    # print(dxyz)
     # print(position0)
-    sv.point = position.tolist()
-    if i % 500 == 0:
-        print('t = ','{:f}'.format(i*dt)) 
-        sv.write_vtk('ami2/'+str(i))
+    nodes = xyz.tolist()
+    # print(nodes)
+    if i % 5 == 0:
+        # sv.write_vtk('initial',point=nodes,line=line,face=face)
+        sv.write_vtk("ami2/"+"fa"+str(i),point=nodes,face=face)
+        sv.write_line_vtk("ami2/"+"main_frame"+str(i),point=nodes,line=geo.main_frame)
+        sv.write_line_vtk("ami2/"+"pontoon_cylinder"+str(i),point=nodes,line=geo.pontoon_cylinder)
+        sv.write_line_vtk("ami2/"+"pontoon_cone"+str(i),point=nodes,line=geo.pontoon_cone)
+        #sv.write_line_vtk("ami2/"+"l5"+str(i),point=nodes,line=geo.l5)
+        sv.write_line_vtk("ami2/"+"mooring_line"+str(i),point=nodes,line=geo.mooring_line)
+        
+'''
+# for circular cage
+# import src.case.circularCage as case
+# case.main()
+nodes=geo.nodes
+line=geo.l_all
+face=geo.netFace
+# sv.write_vtk('initial',point=nodes,line=line,face=face)
+sv.write_vtk("initial",point=nodes,face=geo.netFace)
+sv.write_line_vtk("initial_l1",point=nodes,line=geo.l1)
+sv.write_line_vtk("initial_l2",point=nodes,line=geo.l2)
+sv.write_line_vtk("initial_l3",point=nodes,line=geo.l3)
+sv.write_line_vtk("initial_l5",point=nodes,line=geo.l5)
+sv.write_line_vtk("initial_lm",point=nodes,line=geo.lm)
+
+# define structural properties
+num_bodyPoint=31
+num_seg=50
+
+m_body=4980760 #[kg]
+# l1=l.lines(geo.l1,10e9,0.5)
+# l2=l.lines(geo.l2,10e9,1.0)
+# l3=l.lines(geo.l3,10e9,1.5)
+# l5=l.lines(geo.l5,10e9,2.5)
+# lm=l.lines(geo.lm,10e9,0.01)
+
+
+
+
+# 
+fixed_point=[num_bodyPoint+num_seg*i for i in range(8)]
+
+xyz=np.array(nodes)
+dxyz=np.zeros_like(xyz)
+gravity=np.array([0,0,-9.81])
+
+
+run_time = 10  # unit [s]
+dt = 2e-2    # unit [s]
+
+# forward Euler (explicit)
+for i in range(int(run_time/dt)):       
+       
+    # gravity force
+    dxyz += dt*gravity
+    
+    # boundary condition
+    dxyz[fixed_point] *= 0.0  # velocity restriction
+    dxyz[xyz[:,2]<-22.0]*=np.array([1.0,1.0,0.0]) 
+    # velocity[fixed_point] *= np.array([1.0,1.0,0.0])  # fixed on xy plane
+    xyz += dt*dxyz
+    # print(dxyz)
+    # print(position0)
+    nodes = xyz.tolist()
+    # print(nodes)
+    if i % 5 == 0:
+        # sv.write_vtk('initial',point=nodes,line=line,face=face)
+        sv.write_vtk("ami2/"+"fa"+str(i),point=nodes,face=face)
+        sv.write_line_vtk("ami2/"+"l1"+str(i),point=nodes,line=geo.l1)
+        sv.write_line_vtk("ami2/"+"l2"+str(i),point=nodes,line=geo.l2)
+        sv.write_line_vtk("ami2/"+"l3"+str(i),point=nodes,line=geo.l3)
+        sv.write_line_vtk("ami2/"+"l5"+str(i),point=nodes,line=geo.l5)
+        sv.write_line_vtk("ami2/"+"lm"+str(i),point=nodes,line=geo.lm)       
 '''
