@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from vtk.vtkIOXML import vtkXMLDataSetWriter
 import vtk
 
 
@@ -82,35 +81,54 @@ def __MakeMultiFace(point_list:list,triangle_list:list):
             ug.InsertNextCell(pixel.GetCellType(), pixel.GetPointIds())    
     return ug
 
-def write_vtkPoint(points,file_name):
-    u1=__MakeMultiPoint(points)
-    writer = vtkXMLDataSetWriter()
-    writer.SetInputData(u1)
-    writer.SetFileName(file_name+'.point.vtu')
-    writer.Write()
+def write_vtk(file_name:str,**content):
+    """a function to save vtk point, line and face file.
 
-
-
-def write_vtk(file_name:str):
+    Args:
+        file_name (str): the name for the file
+        content (arbitrary keyword arguments):
+        point, line, face: python list
+        
     """
-    The input is a file name (str).
-    This function is to save the file to vtk format
-    """
-    u1=__MakeMultiPoint(point)
-    u2=__MakeMultiLine(point,line)
-    u3=__MakeMultiFace(point,face)
+    writer = vtk.vtkXMLDataSetWriter()
+    #print(content)
     
-    writer = vtkXMLDataSetWriter()
-    #u1
-    writer.SetInputData(u1)
-    writer.SetFileName(file_name+'.point.vtu')
-    writer.Write()
+    try:
+        u1=__MakeMultiPoint(content['point'])
+        writer.SetInputData(u1)
+        writer.SetFileName(file_name+'.point.vtu')
+        writer.Write()
+    except:
+        print('No point data is given')
     
-    writer.SetInputData(u2)
-    writer.SetFileName(file_name+'.line.vtu')
-    writer.Write()
+    try:
+        u2=__MakeMultiLine(content['point'],content['line'])
+        writer.SetInputData(u2)
+        writer.SetFileName(file_name+'.line.vtu')
+        writer.Write()
+    except:
+        print('No line data is given')
     
-    writer.SetInputData(u3)
-    writer.SetFileName(file_name+'.face.vtu')
-    writer.Write()    
+    try:
+        u3=__MakeMultiFace(content['point'],content['face'])
+        writer.SetInputData(u3)
+        writer.SetFileName(file_name+'.face.vtu')
+        writer.Write()    
+    except:
+        print('No face data is given')
+        
+def write_line_vtk(file_name:str,**content):
+    writer = vtk.vtkXMLDataSetWriter()
+    try:
+        u2=__MakeMultiLine(content['point'],content['line'])
+        writer.SetInputData(u2)
+        writer.SetFileName(file_name+'.line.vtu')
+        writer.Write()
+    except:
+        print('No line data is given')
+        
+        
+if __name__ == '__main__':
+    write_vtk('test',point=point,line=line,face=face)    
+        
     
