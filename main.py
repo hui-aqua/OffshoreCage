@@ -23,7 +23,7 @@ num_seg=110 #50
 
 m_body=5600000 #[kg] 4980760 
 k_main_frame = 10e20 
-l1=l.lines(geo.mooring_line,680e6,0.088) # Axial stiffness[MN] 680.81 (Chain) 235.44 (Fiber)
+l1=l.lines(geo.mooring_line,680.81e6,0.088) # Axial stiffness[MN] 680.81 (Chain) 235.44 (Fiber)
 l1.assign_length(10.0)
 
 # Main frame properties
