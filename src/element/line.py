@@ -7,6 +7,9 @@ dynamic_viscosity = 1.002e-3  # when the water temperature is 20 degree.
 
 class lines:
     def __init__(self,index:list,stiffness:float,dw0:float):
+        '''
+        Assign the line index and assign stiffness and diameter (python list, stiffness, diameter)
+        '''
         self.k=stiffness # unit [N/m] a.k.a -> K
         self.index=index
         self.np_index=np.array(index)
@@ -17,6 +20,9 @@ class lines:
     # private function 
 
     def __calc_lengths(self,point_position:np.array):
+        '''
+        
+        '''
         line_vector=point_position[self.np_index[:, 0]]-point_position[self.np_index[:, 1]]
         line_length=np.linalg.norm(line_vector, axis=1)
         self.unit_vector=line_vector/line_length.reshape(self.number_of_line,-1)
@@ -26,11 +32,9 @@ class lines:
     
     # public function
     def assign_length(self,input_value):
-        """
+        '''
         Assign the length of segment to line element
-
-        """
-
+        '''
         if type(input_value) ==type(4.2):
             self.initial_line_length = self.number_of_line*[input_value]
         elif type(input_value)== type([4,2]) and len(input_value)==self.number_of_line:
@@ -43,6 +47,9 @@ class lines:
         return np.mean(self.initial_line_length)
 
     def calc_tension_force(self,point_position):
+        '''
+        
+        '''
         line_length=self.__calc_lengths(point_position)
         deformations=line_length - self.initial_line_length 
         # no compression force
@@ -51,7 +58,9 @@ class lines:
         return tension
     
     def map_tension(self,forces):
-        # spring forces on the points of first column of spring index
+        '''
+        spring forces on the points of first column of spring index
+        '''
         force1 = -self.unit_vector *forces.reshape(self.number_of_line, -1)
         force2 =  self.unit_vector *forces.reshape(self.number_of_line, -1)
         force_on_point=np.zeros((self.number_of_point,3))
