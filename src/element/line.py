@@ -9,6 +9,11 @@ class lines:
     def __init__(self,index:list,stiffness:float,dw0:float):
         '''
         Assign the line index and assign stiffness and diameter (python list, stiffness, diameter)
+
+        Agrs:
+            Python list : List of the line element
+            Stiffness   : Desired stiffness (N/m)
+            Diameter    : Float number
         '''
         self.k=stiffness # unit [N/m] a.k.a -> K
         self.index=index
@@ -21,7 +26,7 @@ class lines:
 
     def __calc_lengths(self,point_position:np.array):
         '''
-        
+        A function to calculate the length between points
         '''
         line_vector=point_position[self.np_index[:, 0]]-point_position[self.np_index[:, 1]]
         line_length=np.linalg.norm(line_vector, axis=1)
@@ -33,7 +38,10 @@ class lines:
     # public function
     def assign_length(self,input_value):
         '''
-        Assign the length of segment to line element
+        A function to assign specific length of segment to line element 
+        
+        Args:
+            assign_length (float) : float value of length
         '''
         if type(input_value) ==type(4.2):
             self.initial_line_length = self.number_of_line*[input_value]
@@ -48,7 +56,10 @@ class lines:
 
     def calc_tension_force(self,point_position):
         '''
-        
+        A function to calculate tension in the line element at specific location due to the deformation
+
+        Agrs:
+            calc_tension_force() : List of the location of the tension
         '''
         line_length=self.__calc_lengths(point_position)
         deformations=line_length - self.initial_line_length 
@@ -59,7 +70,7 @@ class lines:
     
     def map_tension(self,forces):
         '''
-        spring forces on the points of first column of spring index
+        Spring forces on the points of first column of spring index
         '''
         force1 = -self.unit_vector *forces.reshape(self.number_of_line, -1)
         force2 =  self.unit_vector *forces.reshape(self.number_of_line, -1)
