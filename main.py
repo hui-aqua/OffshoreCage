@@ -26,7 +26,7 @@ m_body=5600000 #[kg] 4980760
 k_main_frame = 10e20 
 l1=l.lines(geo.mooring_line,680.81e6,0.088) # Axial stiffness[MN] 680.81 (Chain) 235.44 (Fiber)
 l1.assign_length(10.0)
-l1.calc_tension_force(nodes)
+l1.calc_tension_force(np.array(nodes))
 
 # Main frame properties
 l2=l.lines(geo.top_cross_beam,k_main_frame,2.05)
