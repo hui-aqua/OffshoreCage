@@ -38,7 +38,7 @@ class lines:
         # print(type(l[0]))
         # print(point_position[l[0]])
         
-        line_vector=point_position[self.np_index[:, 0]]-point_position[self.np_index[:, 1]]
+        line_vector=point_position[self.np_index[:, 0].astype(int)]-point_position[self.np_index[:, 1].astype(int)]
         line_length=np.linalg.norm(line_vector, axis=1)
         self.unit_vector=line_vector/line_length.reshape(self.number_of_line,-1)
         self.line_length=line_length
