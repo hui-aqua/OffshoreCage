@@ -7,17 +7,9 @@ dynamic_viscosity = 1.002e-3  # when the water temperature is 20 degree.
 
 class lines:
     def __init__(self,index:list,stiffness:float,dw0:float):
-        '''
-        Assign the line index and assign stiffness and diameter (python list, stiffness, diameter)
-
-        Agrs:
-            Python list : List of the line element
-            Stiffness   : Desired stiffness (N/m)
-            Diameter    : Float number
-        '''
         self.k=stiffness # unit [N/m] a.k.a -> K
         self.index=index
-        self.np_index=np.array(index,dtype=int).astype(int)
+        self.np_index=np.array(index)
         self.number_of_point=len(np.unique(np.array(self.index)))
         self.number_of_line=len(index)
         self.initial_line_length=0
@@ -25,20 +17,7 @@ class lines:
     # private function 
 
     def __calc_lengths(self,point_position:np.array):
-        '''
-        A function to calculate the length between points
-
-        Args:
-            __calc_lengths(point list)
-
-        '''
-        # print(self.np_index)
-        # print(self.np_index[:, 0])
-        # l=self.np_index[:, 0]
-        # print(type(l[0]))
-        # print(point_position[l[0]])
-        
-        line_vector=point_position[self.np_index[:, 0].astype(int)]-point_position[self.np_index[:, 1].astype(int)]
+        line_vector=point_position[self.np_index[:, 0]]-point_position[self.np_index[:, 1]]
         line_length=np.linalg.norm(line_vector, axis=1)
         self.unit_vector=line_vector/line_length.reshape(self.number_of_line,-1)
         self.line_length=line_length
@@ -47,30 +26,29 @@ class lines:
     
     # public function
     def assign_length(self,input_value):
-        '''
-        A function to assign specific length of segment to line element 
-        
+        """This is a initial function to assign a length to a group line element
+
         Args:
-            assign_length (float) : float value of length
-        '''
-        if type(input_value) ==type(4.2):
-            self.initial_line_length = self.number_of_line*[input_value]
-        elif type(input_value)== type([4,2]) and len(input_value)==self.number_of_line:
-            self.initial_line_length = input_value
-        elif type(input_value)==type(np.zeros(3)):
-            self.initial_line_length = self.__calc_lengths(input_value)
-        else:
-            print("An error from the input value, please check type of input.")
+            input_value (varian): the input value can be:\n 
+            (1) one single value, then the length of line element will be the same as input value.\n
+            (2) a python list of length, to assign a variant length to the line group.\n
+            (3) a n*3 numpy array of all the nodes position, then the length can bu calculated based on the array.\n
             
+
+        Returns:
+            float: get the mean length of this line group.
+        """
+        if type(input_value)==type(np.zeros(3)):
+            self.initial_line_length = self.__calc_lengths(input_value)
+        elif type(input_value)==type([1]) and len(input_value)== self.number_of_line:
+            self.initial_line_length = input_value
+        elif type(input_value) ==type(4.2):
+            self.initial_line_length = self.number_of_line*[input_value]
+        
         return np.mean(self.initial_line_length)
-
+        
+    
     def calc_tension_force(self,point_position):
-        '''
-        A function to calculate tension in the line element at specific location due to the deformation
-
-        Agrs:
-            calc_tension_force(python list) : List of the location of the tension
-        '''
         line_length=self.__calc_lengths(point_position)
         deformations=line_length - self.initial_line_length 
         # no compression force
@@ -78,16 +56,32 @@ class lines:
         tension=deformations*self.k
         return tension
     
-    def map_tension(self,forces):
-        '''
-        Spring forces on the points of first column of spring index
-        '''
+    def calc_compression_force(self,point_position):
+        line_length=self.__calc_lengths(point_position)
+        deformations=line_length - self.initial_line_length 
+        # no compression force
+        deformations[deformations>0]*=0.0
+        tension=deformations*self.k
+        return tension
+    
+    
+    def map_tension(self,forces:np.array,num_point:int):
+        # spring forces on the points of first column of spring index
+        force1 = -self.unit_vector *forces.reshape(self.number_of_line, -1)
+        force2 =  self.unit_vector *forces.reshape(self.number_of_line, -1)
+        force_on_point=np.zeros((num_point,3))
+        force_on_point[self.np_index[:,0]]+=force1
+        force_on_point[self.np_index[:,1]]+=force2
+        return force_on_point
+    
+    def pbd_position(self,forces,mass):
         force1 = -self.unit_vector *forces.reshape(self.number_of_line, -1)
         force2 =  self.unit_vector *forces.reshape(self.number_of_line, -1)
         force_on_point=np.zeros((self.number_of_point,3))
         force_on_point[self.np_index[:,0]]+=force1
         force_on_point[self.np_index[:,1]]+=force2
         return force_on_point
+        
     
     
     def calculate_extenal_force(self,node_position,u): 
