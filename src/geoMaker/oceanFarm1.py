@@ -215,7 +215,7 @@ for i in range(8):
 
 ### MASS MATRIX STR ###
 
-mass_matrix = [[27828.2760],
+mass_matrix = [[1622804.1481], # point mass for control building shared with node 61
                [19471.4275],
                [29559.2002],
                [19471.4275],
@@ -276,7 +276,7 @@ mass_matrix = [[27828.2760],
                [64961.9152],
                [19471.4275],
                [64961.9152],
-               [65959.2585],
+               [1660935.131], # point mass for control building shared with node 0
                [88286.7884],
                [51436.6158],
                [51436.6158],
