@@ -23,9 +23,9 @@ fixed_point=[0,111,221,332,442,553,663,774]  # anchor point
 fixed_point+=geo.body_attached_point # fish cage body
 
 gravity=np.array([0,0,-9.81])
-mass_matrix = np.array(geo.mass_mooring_line).reshape(len(geo.mass_mooring_line),1)
+mass_matrix = np.array(geo.mass_mooring_line_new).reshape(len(geo.mass_mooring_line_new),1)
 run_time = 10  # unit [s]
-dt = 2e-2    # unit [s]
+dt = 2e-4    # unit [s]
 
 
 ## initialization 
@@ -34,7 +34,7 @@ velocity=np.zeros_like(position)
 
 
 for i in range(int(run_time/dt)):       
-    if i % 5 == 0:
+    if i % 2 == 0:
 
         sv.write_line_vtk("ami2/"+"mooring_line"+str(i),point=position.tolist(),line=line)
                
@@ -48,6 +48,7 @@ for i in range(int(run_time/dt)):
     velocity[fixed_point] *= 0.0  # velocity restriction
     velocity[position[:,2]<-150]*=np.array([1,1,0])# ground
     position += velocity*dt
+    position[fixed_point]=np.array(nodes)[fixed_point]
     ### constraint function 
     position+=l1.pbd_edge_constraint(position,mass_matrix,dt)
     

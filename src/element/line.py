@@ -79,7 +79,7 @@ class lines:
         alpha=1.0/self.k/ dt /dt
         w=1.0/mass
         #print(w.shape)
-        print(w.shape)
+        #print(w.shape)
         w1_w2=w[self.np_index[:,0]]+w[self.np_index[:,1]]
         C=line_length-self.initial_line_length   
         s=C.reshape(len(C),1)/(w1_w2+alpha)
