@@ -17,7 +17,8 @@ class lines:
     # private function 
 
     def __calc_lengths(self,point_position:np.array):
-        line_vector=point_position[self.np_index[:, 0]]-point_position[self.np_index[:, 1]]
+        print(point_position[self.np_index[:, 1]])
+        line_vector=point_position[self.np_index[:, 1]]-point_position[self.np_index[:, 0]]
         line_length=np.linalg.norm(line_vector, axis=1)
         self.unit_vector=line_vector/line_length.reshape(self.number_of_line,-1)
         self.line_length=line_length
@@ -67,20 +68,25 @@ class lines:
     
     def map_tension(self,forces:np.array,num_point:int):
         # spring forces on the points of first column of spring index
-        force1 = -self.unit_vector *forces.reshape(self.number_of_line, -1)
-        force2 =  self.unit_vector *forces.reshape(self.number_of_line, -1)
+        force1 =  self.unit_vector *forces.reshape(self.number_of_line, -1)
+        force2 = -self.unit_vector *forces.reshape(self.number_of_line, -1)
         force_on_point=np.zeros((num_point,3))
         force_on_point[self.np_index[:,0]]+=force1
         force_on_point[self.np_index[:,1]]+=force2
         return force_on_point
     
-    def pbd_position(self,forces,mass):
-        force1 = -self.unit_vector *forces.reshape(self.number_of_line, -1)
-        force2 =  self.unit_vector *forces.reshape(self.number_of_line, -1)
-        force_on_point=np.zeros((self.number_of_point,3))
-        force_on_point[self.np_index[:,0]]+=force1
-        force_on_point[self.np_index[:,1]]+=force2
-        return force_on_point
+    def pbd_edge_constraint(self,point_position:np.array,mass:np.array,dt:float):
+        line_length=self.__calc_lengths(point_position)
+        alpha=1.0/self.k/ dt /dt
+        w=1.0/mass
+        w1_w2=w[self.np_index[:,0]]+w[self.np_index[:,1]]
+        C=line_length-self.initial_line_length   
+        s=C/(w1_w2+alpha)
+
+        position_correction=np.zeros((self.number_of_point,3))
+        position_correction[self.np_index[:,0]]+=self.unit_vector*s*w[self.np_index[:,0]]
+        position_correction[self.np_index[:,1]]+=-self.unit_vector*s*w[self.np_index[:,1]]
+        return position_correction
         
     
     

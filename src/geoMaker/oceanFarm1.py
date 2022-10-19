@@ -98,10 +98,13 @@ attached_point = [38,38,42,42,44,44,48,48]
 
 num_seg=110
 mooring_point=[]
+mooring_point_new=[]
 for i in range(8):
     ml=np.linspace(anchor_point[i],nodes[attached_point[i]],num_seg,endpoint=False)
     mooring_point+=ml.tolist()
-
+    ml=np.linspace(anchor_point[i],nodes[attached_point[i]],num_seg,endpoint=True)
+    mooring_point_new+=ml.tolist()
+    
 nodes += mooring_point
 
 top_cross_beam = [[15,21],
@@ -212,6 +215,12 @@ for i in range(8):
     for j in range(num_seg-1):
         mooring_line.append([i*num_seg+num_body_point+j,i*num_seg+num_body_point+j+1])
     mooring_line.append([i*num_seg+num_body_point+j+1,attached_point[i]])
+
+mooring_line_new=[] #specify quantity of mooring line in "range(x)" and the desired discretization in "num_seg"
+for i in range(8):
+    for j in range(num_seg-1):
+        mooring_line_new.append([i*num_seg+j,i*num_seg+j+1])
+
 
 ### MASS MATRIX STR ###
 

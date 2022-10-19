@@ -5,105 +5,55 @@ import src.visualization.saveVtk as sv
 import src.element.line as l
 import src.element.quad as q
 
-# for circular cage
-# import src.case.circularCage as case
-# case.main()
-nodes   = geo.nodes
-line    = geo.all_line
-face    = geo.netFace
-mlinepoint   = geo.attached_point
 
-# sv.write_vtk('initial',point=nodes,line=line,face=face)
-sv.write_vtk("initial",point=nodes,face=geo.netFace)
-sv.write_line_vtk("initial_main_frame",point=nodes,line=geo.main_frame)
-sv.write_line_vtk("initial_mooring_line",point=nodes,line=geo.mooring_line)
+nodes   = geo.mooring_point_new
+line    = geo.mooring_line_new
+face    = geo.netFace
+
+sv.write_vtk("initial_mooring_line",point=nodes,line=line)
+sv.write_vtk("initial_cage",point=geo.nodes,line=geo.all_line,face=geo.netFace)
 
 # define structural properties
-num_bodyPoint = 77  #31
-num_seg       = 110 #50
-
-m_body=5600000 #[kg] 4980760 
-k_main_frame = 10e15 
-
+num_mooring_line_seg       = geo.num_seg #50
 l1=l.lines(geo.mooring_line,680.81e6,0.088) # Axial stiffness[MN] 680.81 (Chain) 235.44 (Fiber)
 l1.assign_length(10.0)
-l1.calc_tension_force(np.array(nodes))
 
+## setting
+fixed_point=[num_mooring_line_seg*i for i in range(8)]
+fixed_point+=[219,879,659,439]
 
-# Main frame properties
-l2  = l.lines(geo.top_cross_beam,k_main_frame,2.05)
-l3  = l.lines(geo.top_hor_beam,k_main_frame,2.29)
-l4  = l.lines(geo.mid_hor_beam,k_main_frame,1)
-l5  = l.lines(geo.bottom_hor_beam,k_main_frame,2.05)
-l6  = l.lines(geo.dia_beam,k_main_frame,1)
-l7  = l.lines(geo.side_column_wo_pontoon,k_main_frame,2.8)
-l8  = l.lines(geo.bottom_rad_beam,k_main_frame,1.75)
-l9  = l.lines(geo.side_column_w_pontoon,k_main_frame,3.56)
-l10 = l.lines(geo.pontoon_cylinder,k_main_frame,12)
-l11 = l.lines(geo.center_column,k_main_frame,3.56)
-l12 = l.lines(geo.center_pontoon_cylinder,k_main_frame,17)
-
-#
-fixed_point=[num_bodyPoint+num_seg*i for i in range(8)]
-
-xyz=np.array(nodes)
-dxyz=np.zeros_like(xyz)
 gravity=np.array([0,0,-9.81])
-mass_matrix = np.array(geo.mass_matrix)
-
+mass_matrix = np.array(geo.mass_mooring_line).reshape(len(geo.mass_mooring_line),1)
 run_time = 10  # unit [s]
 dt = 2e-2    # unit [s]
 
-# forward Euler (explicit)
+
+## initialization 
+position=np.array(nodes)
+velocity=np.zeros_like(position)
+
+
+
+
+
+
 for i in range(int(run_time/dt)):       
-       
-    # gravity force
-    dxyz += dt*gravity
-    
-    # boundary condition
-    dxyz[fixed_point] *= 0.0  # velocity restriction
-    
-    dxyz[xyz[:,2]<-150.0]*=np.array([1.0,1.0,0.0]) 
-    
-    # Forces on the line
-    spring_force = l1.calc_tension_force(xyz)
-    dxyz+=dt*l1.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l2.calc_tension_force(xyz) + l2.calc_compression_force(xyz)
-    dxyz+=dt*l2.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l3.calc_tension_force(xyz) + l3.calc_compression_force(xyz)
-    dxyz+=dt*l3.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l4.calc_tension_force(xyz) + l4.calc_compression_force(xyz)
-    dxyz+=dt*l4.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l5.calc_tension_force(xyz) + l5.calc_compression_force(xyz)
-    dxyz+=dt*l5.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l6.calc_tension_force(xyz) + l6.calc_compression_force(xyz)
-    dxyz+=dt*l6.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l7.calc_tension_force(xyz) + l7.calc_compression_force(xyz)
-    dxyz+=dt*l7.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l8.calc_tension_force(xyz) + l8.calc_compression_force(xyz)
-    dxyz+=dt*l8.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l9.calc_tension_force(xyz) + l9.calc_compression_force(xyz)
-    dxyz+=dt*l9.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l10.calc_tension_force(xyz) + l10.calc_compression_force(xyz)
-    dxyz+=dt*l10.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l11.calc_tension_force(xyz) + l11.calc_compression_force(xyz)
-    dxyz+=dt*l11.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l12.calc_tension_force(xyz) + l12.calc_compression_force(xyz)
-    dxyz+=dt*l12.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-
-    # velocity[fixed_point] *= np.array([1.0,1.0,0.0])  # fixed on xy plane
-    xyz += dt*dxyz
-    # print(dxyz)
-    # print(position0)
-    nodes = xyz.tolist()
-
-    # print(nodes)
     if i % 5 == 0:
-        # sv.write_vtk('initial',point=nodes,line=line,face=face)
-        # sv.write_vtk("ami2/"+"fa"+str(i),point=nodes,face=face)
-        sv.write_line_vtk("ami2/"+"main_frame"+str(i),point=nodes,line=geo.main_frame)
-        #sv.write_line_vtk("ami2/"+"pontoon_cylinder"+str(i),point=nodes,line=geo.pontoon_cylinder)
-        #sv.write_line_vtk("ami2/"+"pontoon_cone"+str(i),point=nodes,line=geo.pontoon_cone)
-        #sv.write_line_vtk("ami2/"+"l5"+str(i),point=nodes,line=geo.l5)
-        sv.write_line_vtk("ami2/"+"mooring_line"+str(i),point=nodes,line=geo.mooring_line)
-        
+
+        sv.write_line_vtk("ami2/"+"mooring_line"+str(i),point=position.tolist(),line=line)
+               
+    ### forward Euler (explicit)
+    ## external loads
+    # gravity force
+    pre_position=position.copy()
+    velocity += gravity*dt
+    
+    ## boundary condition
+    velocity[fixed_point] *= 0.0  # velocity restriction
+    velocity[position[:,2]<-150]*=np.array([1,1,0])
+    position += velocity*dt
+    ### constraint function 
+    position+=l1.pbd_edge_constraint(position,mass_matrix,dt)
+    
+    ### velocity correction
+    velocity=(position-pre_position)/dt
