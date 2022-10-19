@@ -1,5 +1,5 @@
 import numpy as np
-# import pyvista as pv
+import pyvista as pv
 import src.geoMaker.oceanFarm1 as geo
 import src.visualization.saveVtk as sv
 import src.element.line as l
@@ -23,7 +23,7 @@ num_bodyPoint = 77  #31
 num_seg       = 110 #50
 
 m_body=5600000 #[kg] 4980760 
-k_main_frame = 10e9 
+k_main_frame = 10e15 
 
 l1=l.lines(geo.mooring_line,680.81e6,0.088) # Axial stiffness[MN] 680.81 (Chain) 235.44 (Fiber)
 l1.assign_length(10.0)
@@ -68,30 +68,28 @@ for i in range(int(run_time/dt)):
     # Forces on the line
     spring_force = l1.calc_tension_force(xyz)
     dxyz+=dt*l1.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l2.calc_tension_force(xyz)
+    spring_force = l2.calc_tension_force(xyz) + l2.calc_compression_force(xyz)
     dxyz+=dt*l2.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l3.calc_tension_force(xyz)
+    spring_force = l3.calc_tension_force(xyz) + l3.calc_compression_force(xyz)
     dxyz+=dt*l3.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l4.calc_tension_force(xyz)
+    spring_force = l4.calc_tension_force(xyz) + l4.calc_compression_force(xyz)
     dxyz+=dt*l4.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l5.calc_tension_force(xyz)
+    spring_force = l5.calc_tension_force(xyz) + l5.calc_compression_force(xyz)
     dxyz+=dt*l5.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l6.calc_tension_force(xyz)
+    spring_force = l6.calc_tension_force(xyz) + l6.calc_compression_force(xyz)
     dxyz+=dt*l6.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l7.calc_tension_force(xyz)
+    spring_force = l7.calc_tension_force(xyz) + l7.calc_compression_force(xyz)
     dxyz+=dt*l7.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l8.calc_tension_force(xyz)
+    spring_force = l8.calc_tension_force(xyz) + l8.calc_compression_force(xyz)
     dxyz+=dt*l8.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l9.calc_tension_force(xyz)
+    spring_force = l9.calc_tension_force(xyz) + l9.calc_compression_force(xyz)
     dxyz+=dt*l9.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l10.calc_tension_force(xyz)
+    spring_force = l10.calc_tension_force(xyz) + l10.calc_compression_force(xyz)
     dxyz+=dt*l10.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l11.calc_tension_force(xyz)
+    spring_force = l11.calc_tension_force(xyz) + l11.calc_compression_force(xyz)
     dxyz+=dt*l11.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-    spring_force = l12.calc_tension_force(xyz)
+    spring_force = l12.calc_tension_force(xyz) + l12.calc_compression_force(xyz)
     dxyz+=dt*l12.map_tension(spring_force,len(nodes)) / mass_matrix.reshape(len(nodes),1)    # force/mass
-
-    print(spring_force)
 
     # velocity[fixed_point] *= np.array([1.0,1.0,0.0])  # fixed on xy plane
     xyz += dt*dxyz
@@ -102,9 +100,10 @@ for i in range(int(run_time/dt)):
     # print(nodes)
     if i % 5 == 0:
         # sv.write_vtk('initial',point=nodes,line=line,face=face)
-        sv.write_vtk("ami2/"+"fa"+str(i),point=nodes,face=face)
-        #sv.write_line_vtk("ami2/"+"main_frame"+str(i),point=nodes,line=geo.main_frame)
+        # sv.write_vtk("ami2/"+"fa"+str(i),point=nodes,face=face)
+        sv.write_line_vtk("ami2/"+"main_frame"+str(i),point=nodes,line=geo.main_frame)
         #sv.write_line_vtk("ami2/"+"pontoon_cylinder"+str(i),point=nodes,line=geo.pontoon_cylinder)
         #sv.write_line_vtk("ami2/"+"pontoon_cone"+str(i),point=nodes,line=geo.pontoon_cone)
         #sv.write_line_vtk("ami2/"+"l5"+str(i),point=nodes,line=geo.l5)
-        #sv.write_line_vtk("ami2/"+"mooring_line"+str(i),point=nodes,line=geo.mooring_line)
+        sv.write_line_vtk("ami2/"+"mooring_line"+str(i),point=nodes,line=geo.mooring_line)
+        
