@@ -23,8 +23,10 @@ fixed_point=[0,111,221,332,442,553,663,774]  # anchor point
 fixed_point+=geo.body_attached_point # fish cage body
 
 gravity=np.array([0,0,-9.81])
-mass_matrix = np.array(geo.mass_mooring_line_new).reshape(len(geo.mass_mooring_line_new),1)
-run_time = 20  # unit [s]
+current=np.array([[1.0,0,0]]*len(nodes))
+# mass_matrix = np.array(geo.mass_mooring_line_new).reshape(len(geo.mass_mooring_line_new),1)
+mass_matrix=np.array([[1470.0]]*len(nodes)).reshape(len(geo.mass_mooring_line_new),1)
+run_time = 60  # unit [s]
 dt = 1e-4    # unit [s]
 
 
@@ -34,23 +36,28 @@ velocity=np.zeros_like(position)
 
 
 for i in range(int(run_time/dt)):       
-    if i % 200 == 0:
-
-        sv.write_line_vtk("ami2/"+"mooring_line"+str(i),point=position.tolist(),line=line)
+    if i % 1000 == 0:
+        print('time= '+str(i*dt))
+        position_list=position.tolist()
+        sv.write_line_vtk("ami2/"+"mooring_line"+str(i),point=position_list,line=line)
+        
                
     ### forward Euler (explicit)
     ## external loads
     # gravity force
     pre_position=position.copy()
-    velocity += gravity*dt
+    velocity += dt*gravity
+    # current load
+    velocity += dt*l1.calculate_external_force(position,current)/mass_matrix
     
     ## boundary condition
     velocity[fixed_point] *= 0.0  # velocity restriction
     velocity[position[:,2]<-150]*=np.array([1,1,0])# ground
-    position += velocity*dt
+    position += dt*velocity
     position[fixed_point]=np.array(nodes)[fixed_point]
     ### constraint function 
     position+=l1.pbd_edge_constraint(position,mass_matrix,dt)
     
     ### velocity correction
     velocity=(position-pre_position)/dt
+    

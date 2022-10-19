@@ -74,27 +74,32 @@ class lines:
         force_on_point[self.np_index[:,1]]+=force2
         return force_on_point
     
-    def pbd_edge_constraint(self,point_position:np.array,mass:np.array,dt:float):
+    def pbd_edge_constraint(self,point_position:np.array,point_mass:np.array,dt:float):
         line_length=self.__calc_lengths(point_position)
         alpha=1.0/self.k/ dt /dt
-        w=1.0/mass
+        w=1.0/point_mass
         #print(w.shape)
         #print(w.shape)
         w1_w2=w[self.np_index[:,0]]+w[self.np_index[:,1]]
         C=line_length-self.initial_line_length   
         s=C.reshape(len(C),1)/(w1_w2+alpha)
 
-        position_correction=np.zeros((self.number_of_point,3))
-        position_correction[self.np_index[:,0]]+=self.unit_vector*s*w[self.np_index[:,0]]
+        position_correction=np.zeros_like(point_position)
+        position_correction[self.np_index[:,0]]+= self.unit_vector*s*w[self.np_index[:,0]]
         position_correction[self.np_index[:,1]]+=-self.unit_vector*s*w[self.np_index[:,1]]
         return position_correction
         
     
     
-    def calculate_extenal_force(self,node_position,u): 
+    def calculate_external_force(self,point_position:np.array,flow_velocity:np.array): 
         # calculate the buoyancy and drag force (based on Morison equation).
-        pass
-    
+        self.__calc_lengths(point_position)
+        fh=self.current_load(flow_velocity)
+        force_on_point=np.zeros_like(point_position)
+        force_on_point[self.np_index[:,0]]+=fh/2.0
+        force_on_point[self.np_index[:,1]]+=fh/2.0
+        return force_on_point
+        
     
     def map_hydrodynamic_force(self,forces):
         force_on_point=np.zeros((self.number_of_point,3))
@@ -127,12 +132,7 @@ class lines:
                   str(np.linalg.norm(uc)))
             exit()
         return drag_normal, drag_tangent
-
-    def __cal_aw_ratio(self,):
-        # calculate the ratio between air and water
-        # consider as slender bar
-        pass
-    
+  
     
     def __calculate_buoyancy_force(self,node_position, elevation):
                 
@@ -162,21 +162,22 @@ class lines:
     
     
     
-    def __calculate_dynamic_force(self,uc:np.array):
+    def current_load(self,flow_velocity:np.array):
         """calculate the hydrodynamic forces on line element based on Morison model
 
         Args:
-            sprint_length (np.array): list of the length of line element (M,1) 
-            uc (np.array): fluid velocity at the element centroid (M,3) 
+            
         """
-
-        cn,ct=self.__calculate_coe(uc)
+        flow_velocity_elem=0.5*(flow_velocity[self.np_index[:,0]]+flow_velocity[self.np_index[:,1]])
+        flow_velocity_elem_mag=np.linalg.norm(flow_velocity_elem, axis=1).reshape(self.number_of_line, -1)
+        cn,ct=self.__calculate_coe(flow_velocity_elem)
         # todo check the un ut
-        un=self.unit_vector*uc*self.unit_vector
-        ut=self.unit_vector*uc*self.unit_vector
+  
+        ut=self.unit_vector*flow_velocity_elem
+        un=flow_velocity_elem-ut
 
-        ft=0.5*ct*row_water*self.dw0*self.line_length*ut*np.linalg.norm(ut,axis=1)
-        fn=0.5*cn*row_water*self.dw0*self.line_length*un*np.linalg.norm(un,axis=1)
+        ft=0.5*ct*row_water*self.dw0*self.line_length.reshape(self.number_of_line,1)*ut*np.linalg.norm(ut,axis=1).reshape(self.number_of_line,1)
+        fn=0.5*cn*row_water*self.dw0*self.line_length.reshape(self.number_of_line,1)*un*np.linalg.norm(un,axis=1).reshape(self.number_of_line,1)
 
         return ft+fn
     
