@@ -15,12 +15,12 @@ sv.write_vtk("initial_cage",point=geo.nodes,line=geo.all_line,face=geo.netFace)
 
 # define structural properties
 num_mooring_line_seg       = geo.num_seg #50
-l1=l.lines(geo.mooring_line,680.81e6,0.088) # Axial stiffness[MN] 680.81 (Chain) 235.44 (Fiber)
+l1=l.lines(geo.mooring_line_new,680.81e6,0.088) # Axial stiffness[MN] 680.81 (Chain) 235.44 (Fiber)
 l1.assign_length(10.0)
 
 ## setting
-fixed_point=[num_mooring_line_seg*i for i in range(8)]
-fixed_point+=[219,879,659,439]
+fixed_point=[0,111,221,332,442,553,663,774]  # anchor point
+fixed_point+=geo.body_attached_point # fish cage body
 
 gravity=np.array([0,0,-9.81])
 mass_matrix = np.array(geo.mass_mooring_line).reshape(len(geo.mass_mooring_line),1)
@@ -31,10 +31,6 @@ dt = 2e-2    # unit [s]
 ## initialization 
 position=np.array(nodes)
 velocity=np.zeros_like(position)
-
-
-
-
 
 
 for i in range(int(run_time/dt)):       
@@ -50,7 +46,7 @@ for i in range(int(run_time/dt)):
     
     ## boundary condition
     velocity[fixed_point] *= 0.0  # velocity restriction
-    velocity[position[:,2]<-150]*=np.array([1,1,0])
+    velocity[position[:,2]<-150]*=np.array([1,1,0])# ground
     position += velocity*dt
     ### constraint function 
     position+=l1.pbd_edge_constraint(position,mass_matrix,dt)

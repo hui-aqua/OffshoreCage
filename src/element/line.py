@@ -17,7 +17,6 @@ class lines:
     # private function 
 
     def __calc_lengths(self,point_position:np.array):
-        print(point_position[self.np_index[:, 1]])
         line_vector=point_position[self.np_index[:, 1]]-point_position[self.np_index[:, 0]]
         line_length=np.linalg.norm(line_vector, axis=1)
         self.unit_vector=line_vector/line_length.reshape(self.number_of_line,-1)
@@ -79,9 +78,11 @@ class lines:
         line_length=self.__calc_lengths(point_position)
         alpha=1.0/self.k/ dt /dt
         w=1.0/mass
+        #print(w.shape)
+        print(w.shape)
         w1_w2=w[self.np_index[:,0]]+w[self.np_index[:,1]]
         C=line_length-self.initial_line_length   
-        s=C/(w1_w2+alpha)
+        s=C.reshape(len(C),1)/(w1_w2+alpha)
 
         position_correction=np.zeros((self.number_of_point,3))
         position_correction[self.np_index[:,0]]+=self.unit_vector*s*w[self.np_index[:,0]]
