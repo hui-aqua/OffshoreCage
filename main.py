@@ -25,21 +25,14 @@ fixed_point+=geo.body_attached_point # fish cage body
 gravity=np.array([0,0,-9.81])
 current=np.array([[1.0,0,0]]*len(nodes))
 mass_matrix = np.array(geo.mass_mooring_line_new).reshape(len(geo.mass_mooring_line_new),1)
-<<<<<<< HEAD
-run_time = 0.1  # unit [s]
-dt = 1e-4    # unit [s]
-=======
 run_time = 5  # unit [s]
 dt = 1e-4     # unit [s]
->>>>>>> 579ca00 (Update force vector and write to file)
 
 force_on_cage=[]
 force_on_BP1 = []
 ## initialization 
 position=np.array(nodes)
 velocity=np.zeros_like(position)
-
-# print(l1f.k)
 
 for i in range(int(run_time/dt)):       
     if i % (run_time / dt / 100) == 0: # write a total of 100 result  
@@ -50,8 +43,10 @@ for i in range(int(run_time/dt)):
     
     ## external loads
     pre_position=position.copy()
+    
     # gravity force
     velocity += dt*gravity
+    
     # current load
     velocity += dt*l1.calculate_external_force(position,current)/mass_matrix
     
