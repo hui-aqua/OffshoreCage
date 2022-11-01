@@ -4,10 +4,10 @@ import src.visualization.saveVtk as sv
 import src.element.line as l
 import src.element.quad as q
 
-
 nodes   = geo.mooring_point_new
 line    = geo.mooring_line_new
 face    = geo.netFace
+num_seg = geo.num_seg
 
 sv.write_vtk("initial_mooring_line",point=nodes,line=line)
 sv.write_vtk("initial_cage",point=geo.nodes,line=geo.all_line,face=geo.netFace)
@@ -25,8 +25,8 @@ fixed_point+=geo.body_attached_point # fish cage body
 gravity=np.array([0,0,-9.81])
 current=np.array([[1.0,0,0]]*len(nodes))
 mass_matrix = np.array(geo.mass_mooring_line_new).reshape(len(geo.mass_mooring_line_new),1)
-run_time = 250  # unit [s] 5,25,50,75,100,150,200,250,300
-dt = 0.0001    # unit [s] try different dt 
+run_time = 0.1  # unit [s]
+dt = 1e-4    # unit [s]
 
 force_on_cage=[]
 force_on_BP1 = []
@@ -62,85 +62,21 @@ for i in range(int(run_time/dt)):
     ### velocity correction
     velocity=(position-pre_position)/dt
     
-    BP1 = 110
-    ML1a = BP1 - 1
-    ML1b = BP1 + 110
+    BP1 = 110        # Body attached point of fairlead 1 location
+    ML1a = BP1 - 1   
+    ML1b = BP1 + num_seg 
 
-    BP2 = 331
-    ML2a = BP1 - 1
-    ML2b = BP1 + 110
+    BP2 = 331        # Body attached point of fairlead 2 location
+    ML2a = BP1 - 1   
+    ML2b = BP1 + num_seg 
 
-    BP3 = 552
+    BP3 = 552        # Body attached point of fairlead 3 location
     ML3a = BP1 - 1
-    ML3b = BP1 + 110
+    ML3b = BP1 + num_seg
 
-    BP4 = 773
+    BP4 = 773        # Body attached point of fairlead 4 location
     ML4a = BP1 - 1
-    ML4b = BP1 + 110
-
-    force1 = 235.44e6*(np.linalg.norm(position[BP1]-position[ML1a]) -10)
-    forceVector1 = np.array(position[BP1])-np.array(position[ML1a])
-    VectorMagnitude1 = np.linalg.norm(forceVector1)
-    FV1x = force1*forceVector1[0]/VectorMagnitude1
-    FV1y = force1*forceVector1[1]/VectorMagnitude1
-    FV1z = force1*forceVector1[2]/VectorMagnitude1
-    FV1 = [FV1x, FV1y, FV1z]
-    
-    force2 = 235.44e6*(np.linalg.norm(position[BP1]-position[ML1b]) -10)
-    forceVector2 = np.array(position[BP1])-np.array(position[ML1b])
-    VectorMagnitude2 = np.linalg.norm(forceVector2)
-    FV2x = force2*forceVector2[0]/VectorMagnitude2
-    FV2y = force2*forceVector2[1]/VectorMagnitude2
-    FV2z = force2*forceVector2[2]/VectorMagnitude2
-    FV2 = [FV2x, FV2y, FV2z]
-
-    force3 = 235.44e6*(np.linalg.norm(position[BP2]-position[ML2a]) -10)
-    forceVector3 = np.array(position[BP2])-np.array(position[ML2a])
-    VectorMagnitude3 = np.linalg.norm(forceVector3)
-    FV3x = force3*forceVector3[0]/VectorMagnitude3
-    FV3y = force3*forceVector3[1]/VectorMagnitude3
-    FV3z = force3*forceVector3[2]/VectorMagnitude3
-    FV3 = [FV3x, FV3y, FV3z]
-
-    force4 = 235.44e6*(np.linalg.norm(position[BP2]-position[ML2b]) -10)
-    forceVector4 = np.array(position[BP2])-np.array(position[ML2b])
-    VectorMagnitude4 = np.linalg.norm(forceVector4)
-    FV4x = force4*forceVector3[0]/VectorMagnitude4
-    FV4y = force4*forceVector3[1]/VectorMagnitude4
-    FV4z = force4*forceVector3[2]/VectorMagnitude4
-    FV4 = [FV4x, FV4y, FV4z]
-
-    force5 = 235.44e6*(np.linalg.norm(position[BP3]-position[ML3a]) -10)
-    forceVector5 = np.array(position[BP3])-np.array(position[ML3a])
-    VectorMagnitude5 = np.linalg.norm(forceVector5)
-    FV5x = force5*forceVector5[0]/VectorMagnitude5
-    FV5y = force5*forceVector5[1]/VectorMagnitude5
-    FV5z = force5*forceVector5[2]/VectorMagnitude5
-    FV5 = [FV5x, FV5y, FV5z]
-    
-    force6 = 235.44e6*(np.linalg.norm(position[BP3]-position[ML3b]) -10)
-    forceVector6 = np.array(position[BP3])-np.array(position[ML3b])
-    VectorMagnitude6 = np.linalg.norm(forceVector6)
-    FV6x = force6*forceVector6[0]/VectorMagnitude6
-    FV6y = force6*forceVector6[1]/VectorMagnitude6
-    FV6z = force6*forceVector6[2]/VectorMagnitude6
-    FV6 = [FV6x, FV6y, FV6z]
-
-    BP1 = 110
-    ML1a = BP1 - 1
-    ML1b = BP1 + 110
-
-    BP2 = 331
-    ML2a = BP1 - 1
-    ML2b = BP1 + 110
-
-    BP3 = 552
-    ML3a = BP1 - 1
-    ML3b = BP1 + 110
-
-    BP4 = 773
-    ML4a = BP1 - 1
-    ML4b = BP1 + 110
+    ML4b = BP1 + num_seg
 
     force1 = 235.44e6*(np.linalg.norm(position[BP1]-position[ML1a]) -10)
     forceVector1 = np.array(position[BP1])-np.array(position[ML1a])
@@ -213,6 +149,5 @@ for i in range(int(run_time/dt)):
 
     force_on_cage.append([forceBP1,forceBP2,forceBP3,forceBP4])
     force_on_BP1.append([FV1x+FV2x, FV1y+FV2y, FV1z+FV2z])
-
 
 np.savetxt( str(run_time) + "s_with_dt-" + str(dt) + 's_ForceOnBP1.csv', force_on_BP1)
