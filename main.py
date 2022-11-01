@@ -37,7 +37,7 @@ velocity=np.zeros_like(position)
 # print(l1f.k)
 
 for i in range(int(run_time/dt)):       
-    if i % (run_time / dt / 100) == 0:
+    if i % (run_time / dt / 100) == 0: # write a total of 100 result  
 
         sv.write_line_vtk("ami2/"+str(run_time)+"_with_"+str(dt) + "mooring_line"+str(i),point=position.tolist(),line=line)
                
@@ -148,6 +148,8 @@ for i in range(int(run_time/dt)):
     forceBP4 = [FV7x+FV8x, FV8y+FV8y, FV7z+FV8z]
 
     force_on_cage.append([forceBP1,forceBP2,forceBP3,forceBP4])
-    force_on_BP1.append([FV1x+FV2x, FV1y+FV2y, FV1z+FV2z])
-
+    
+    if i % (run_time / dt / 1000) == 0: # write 1000 time histroy for force every  
+        force_on_BP1.append([FV1x+FV2x, FV1y+FV2y, FV1z+FV2z])
+    
 np.savetxt( str(run_time) + "s_with_dt-" + str(dt) + 's_ForceOnBP1.csv', force_on_BP1)
