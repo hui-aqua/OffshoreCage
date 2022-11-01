@@ -157,4 +157,4 @@ for i in range(int(run_time/dt)):
     if i % (run_time / dt / 1000) == 0: # write 1000 time histroy for force every  
         force_on_BP1.append([FV1x+FV2x, FV1y+FV2y, FV1z+FV2z])
     
-np.savetxt( str(run_time) + "s_with_dt-" + str(dt) + 's_ForceOnBP1.csv', force_on_BP1)
+np.savetxt( str(run_time) + "s_with_dt-" + str(dt) + 's_ForceOnBP1.csv', force_on_BP1) ##test
