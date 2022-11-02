@@ -21,14 +21,15 @@ l1f=l.lines(geo.mooring_line_fiber,235.44e6,0.160)
 l1.assign_length(10.0)
 
 ## setting
-fixed_point=[0,111,221,332,442,553,663,774]  # anchor point
-fixed_point+=geo.body_attached_point # fish cage body
+fixed_point = geo.fixed_point               # anchor point
+fixed_point+=geo.body_attached_point        # fish cage body
 
 gravity=np.array([0,0,-9.81])
 current=np.array([[1.0,0,0]]*len(nodes))
 mass_matrix = np.array(geo.mass_mooring_line_new).reshape(len(geo.mass_mooring_line_new),1)
-run_time = 1  # unit [s]
-time_step = [0.0001, 0.00001]     # unit [s]
+
+run_time = 1                      # Total simulation runn time, unit [s]
+time_step = [0.0001]     # Time steps, unit [s]
 
 force_on_cage = []
 force_on_BP1  = []
@@ -39,9 +40,9 @@ velocity=np.zeros_like(position)
 for dt in time_step:
 
     for i in range(int(run_time/dt)):       
-        if i % (run_time / dt / 100) == 0: # write a total of 100 result  
+        if i % () == 0: # write a total of 100 result  
 
-            sv.write_line_vtk("ami2/"+str(run_time)+"_with_"+str(dt) + "mooring_line"+str(i),point=position.tolist(),line=line)
+            sv.write_line_vtk("ami2/"+str(run_time)+"W"+str(dt) + "mooring_line"+str(i),point=position.tolist(),line=line)
                 
         ### forward Euler (explicit)
         
@@ -159,12 +160,12 @@ for dt in time_step:
     np.savetxt( str(run_time) + "s_with_dt-" + str(dt) + 's_ForceOnBP1.csv', force_on_BP1, delimiter=",") # Save file
 
   
-# x axis values
-x = force_on_BP1[:,0]
-# corresponding y axis values
-y = force_on_BP1[:,1]
+# # x axis values
+# x = force_on_BP1[:,0]
+# # corresponding y axis values
+# y = force_on_BP1[:,1]
 
-print(x)
+# print(x)
 
 # # plotting the points 
 # plt.plot(x, y)

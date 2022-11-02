@@ -222,7 +222,7 @@ for i in range(8):
 
 mooring_line_new=[]
 #TODO remofe the fixed point list
-fixed_point=[0,111,221,332,442,553,663,774]  # anchor point
+fixed_point=[0, (1*num_seg)+1, (2*num_seg)+1, (3*num_seg)+2, (4*num_seg)+2, (5*num_seg)+3, (6*num_seg)+3, (7*num_seg)+4]  # anchor point  # anchor point
 body_attached_point=[num_seg+(2*num_seg+1)*i for i in range(4)]
 for i in range(8):
     for j in range(num_seg-1): # per each mooring line
