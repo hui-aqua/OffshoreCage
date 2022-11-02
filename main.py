@@ -15,9 +15,18 @@ sv.write_vtk("initial_mooring_line",point=nodes,line=line)
 sv.write_vtk("initial_cage",point=geo.nodes,line=geo.all_line,face=geo.netFace)
 
 # define structural properties
-num_mooring_line_seg = geo.num_seg #50
-l1=l.lines(geo.mooring_line_new,680.81e6,0.088) # Axial stiffness[MN] 680.81 (Chain) 235.44 (Fiber)
-l1f=l.lines(geo.mooring_line_fiber,235.44e6,0.160)
+seg_length = 1100/num_seg
+E_fiber = 11.7e9 
+A_fiber = 0.020103051
+k_fiber = E_fiber*A_fiber/seg_length
+
+E_chain = 60e9
+A_chain = 0.012170404
+k_chain = E_chain*A_chain/seg_length
+
+num_mooring_line_seg = geo.num_seg 
+l1=l.lines(geo.mooring_line_new,k_chain,0.088) # Axial stiffness[MN] 680.81 (Chain) 235.44 (Fiber)
+l1f=l.lines(geo.mooring_line_fiber,k_fiber,0.160)
 l1.assign_length(10.0)
 
 ## setting
@@ -67,23 +76,23 @@ for dt in time_step:
         ### velocity correction
         velocity=(position-pre_position)/dt
         
-        BP1 = 110               # Body attached point of fairlead 1 location
-        ML1a = BP1 - 1          # 1st point on mooring line 1
-        ML1b = BP1 + num_seg    # 1st point on mooring line 2
+        BP1 = num_seg                       # Body attached point of fairlead 1 location
+        ML1a = BP1 - 1                      # 1st point on mooring line 1
+        ML1b = BP1 + num_seg                # 1st point on mooring line 2
 
-        BP2 = 331               # Body attached point of fairlead 2 location
-        ML2a = BP1 - 1          # 1st point on mooring line 3
-        ML2b = BP1 + num_seg    # 1st point on mooring line 4
+        BP2 = num_seg + (1*num_seg*2) + 1   # Body attached point of fairlead 2 location
+        ML2a = BP1 - 1                      # 1st point on mooring line 3
+        ML2b = BP1 + num_seg                # 1st point on mooring line 4
 
-        BP3 = 552               # Body attached point of fairlead 3 location
-        ML3a = BP1 - 1          # 1st point on mooring line 5
-        ML3b = BP1 + num_seg    # 1st point on mooring line 6
+        BP3 = num_seg + (2*num_seg*2) + 2   # Body attached point of fairlead 3 location
+        ML3a = BP1 - 1                      # 1st point on mooring line 5
+        ML3b = BP1 + num_seg                # 1st point on mooring line 6
 
-        BP4 = 773               # Body attached point of fairlead 4 location
-        ML4a = BP1 - 1          # 1st point on mooring line 7
-        ML4b = BP1 + num_seg    # 1st point on mooring line 8
+        BP4 = num_seg + (3*num_seg*2) + 3   # Body attached point of fairlead 4 location
+        ML4a = BP1 - 1                      # 1st point on mooring line 7
+        ML4b = BP1 + num_seg                # 1st point on mooring line 8
 
-        force1 = 235.44e6*(np.linalg.norm(position[BP1]-position[ML1a]) -10)    # Calculate force magnitude by mooring line 1
+        force1 = k_fiber*(np.linalg.norm(position[BP1]-position[ML1a]) -10)    # Calculate force magnitude by mooring line 1
         forceVector1 = np.array(position[BP1])-np.array(position[ML1a])         # Calculate line vector of BP1 to ML1
         VectorMagnitude1 = np.linalg.norm(forceVector1)
         FV1x = force1*forceVector1[0]/VectorMagnitude1                          # Force vector in x axis 
@@ -91,7 +100,7 @@ for dt in time_step:
         FV1z = force1*forceVector1[2]/VectorMagnitude1                          # Force vector in z axis
         FV1 = [FV1x, FV1y, FV1z]
         
-        force2 = 235.44e6*(np.linalg.norm(position[BP1]-position[ML1b]) -10)
+        force2 = k_fiber*(np.linalg.norm(position[BP1]-position[ML1b]) -10)
         forceVector2 = np.array(position[BP1])-np.array(position[ML1b])
         VectorMagnitude2 = np.linalg.norm(forceVector2)
         FV2x = force2*forceVector2[0]/VectorMagnitude2
@@ -99,7 +108,7 @@ for dt in time_step:
         FV2z = force2*forceVector2[2]/VectorMagnitude2
         FV2 = [FV2x, FV2y, FV2z]
 
-        force3 = 235.44e6*(np.linalg.norm(position[BP2]-position[ML2a]) -10)
+        force3 = k_fiber*(np.linalg.norm(position[BP2]-position[ML2a]) -10)
         forceVector3 = np.array(position[BP2])-np.array(position[ML2a])
         VectorMagnitude3 = np.linalg.norm(forceVector3)
         FV3x = force3*forceVector3[0]/VectorMagnitude3
@@ -107,7 +116,7 @@ for dt in time_step:
         FV3z = force3*forceVector3[2]/VectorMagnitude3
         FV3 = [FV3x, FV3y, FV3z]
 
-        force4 = 235.44e6*(np.linalg.norm(position[BP2]-position[ML2b]) -10)
+        force4 = k_fiber*(np.linalg.norm(position[BP2]-position[ML2b]) -10)
         forceVector4 = np.array(position[BP2])-np.array(position[ML2b])
         VectorMagnitude4 = np.linalg.norm(forceVector4)
         FV4x = force4*forceVector3[0]/VectorMagnitude4
@@ -115,7 +124,7 @@ for dt in time_step:
         FV4z = force4*forceVector3[2]/VectorMagnitude4
         FV4 = [FV4x, FV4y, FV4z]
 
-        force5 = 235.44e6*(np.linalg.norm(position[BP3]-position[ML3a]) -10)
+        force5 = k_fiber*(np.linalg.norm(position[BP3]-position[ML3a]) -10)
         forceVector5 = np.array(position[BP3])-np.array(position[ML3a])
         VectorMagnitude5 = np.linalg.norm(forceVector5)
         FV5x = force5*forceVector5[0]/VectorMagnitude5
@@ -123,7 +132,7 @@ for dt in time_step:
         FV5z = force5*forceVector5[2]/VectorMagnitude5
         FV5 = [FV5x, FV5y, FV5z]
         
-        force6 = 235.44e6*(np.linalg.norm(position[BP3]-position[ML3b]) -10)
+        force6 = k_fiber*(np.linalg.norm(position[BP3]-position[ML3b]) -10)
         forceVector6 = np.array(position[BP3])-np.array(position[ML3b])
         VectorMagnitude6 = np.linalg.norm(forceVector6)
         FV6x = force6*forceVector6[0]/VectorMagnitude6
@@ -131,7 +140,7 @@ for dt in time_step:
         FV6z = force6*forceVector6[2]/VectorMagnitude6
         FV6 = [FV6x, FV6y, FV6z]
 
-        force7 = 235.44e6*(np.linalg.norm(position[BP4]-position[ML4a]) -10)
+        force7 = k_fiber*(np.linalg.norm(position[BP4]-position[ML4a]) -10)
         forceVector7 = np.array(position[BP4])-np.array(position[ML4a])
         VectorMagnitude7 = np.linalg.norm(forceVector7)
         FV7x = force7*forceVector7[0]/VectorMagnitude7
@@ -139,7 +148,7 @@ for dt in time_step:
         FV7z = force3*forceVector7[2]/VectorMagnitude7
         FV7 = [FV7x, FV7y, FV7z]
 
-        force8 = 235.44e6*(np.linalg.norm(position[BP4]-position[ML4b]) -10)
+        force8 = k_fiber*(np.linalg.norm(position[BP4]-position[ML4b]) -10)
         forceVector8 = np.array(position[BP4])-np.array(position[ML4b])
         VectorMagnitude8 = np.linalg.norm(forceVector8)
         FV8x = force8*forceVector8[0]/VectorMagnitude8
