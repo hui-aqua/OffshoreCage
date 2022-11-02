@@ -26,7 +26,7 @@ fixed_point+=geo.body_attached_point # fish cage body
 gravity=np.array([0,0,-9.81])
 current=np.array([[1.0,0,0]]*len(nodes))
 mass_matrix = np.array(geo.mass_mooring_line_new).reshape(len(geo.mass_mooring_line_new),1)
-run_time = 5  # unit [s]
+run_time = 250  # unit [s]
 dt = 1e-4     # unit [s]
 
 force_on_cage=[]
