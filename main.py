@@ -4,6 +4,7 @@ import src.visualization.saveVtk as sv
 import src.element.line as l
 import src.element.quad as q
 import math as m
+import matplotlib.pyplot as plt
 
 nodes   = geo.mooring_point_new
 line    = geo.mooring_line_new
@@ -26,7 +27,7 @@ fixed_point+=geo.body_attached_point # fish cage body
 gravity=np.array([0,0,-9.81])
 current=np.array([[1.0,0,0]]*len(nodes))
 mass_matrix = np.array(geo.mass_mooring_line_new).reshape(len(geo.mass_mooring_line_new),1)
-run_time = 250  # unit [s]
+run_time = 1  # unit [s]
 dt = 1e-4     # unit [s]
 
 force_on_cage=[]
@@ -154,3 +155,24 @@ for i in range(int(run_time/dt)):
         force_on_BP1.append([i/10000, m.sqrt((FV1x+FV2x)**2 + (FV1y+FV2y)**2 + (FV1z+FV2z)**2), FV1x+FV2x, FV1y+FV2y, FV1z+FV2z])
     
 np.savetxt( str(run_time) + "s_with_dt-" + str(dt) + 's_ForceOnBP1.csv', force_on_BP1, delimiter=",") # Save file
+
+  
+# x axis values
+x = force_on_BP1[:,0]
+# corresponding y axis values
+y = force_on_BP1[:,1]
+  
+# plotting the points 
+plt.plot(x, y)
+  
+# naming the x axis
+plt.xlabel('Run time (s)')
+# naming the y axis
+plt.ylabel('Force magnitude (N)')
+plt.yscale("log")
+
+# giving a title to my graph
+plt.title('Force time history')
+  
+# function to show the plot
+plt.show()
