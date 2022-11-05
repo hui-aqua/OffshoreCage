@@ -27,9 +27,11 @@ A_chain = 0.012170404
 EA_chain=687e6
 k_chain = EA_chain/seg_length
 
-l1=l.lines(geo.mooring_line_new,k_chain,0.088) # Axial stiffness[MN] 680.81 (Chain) 235.44 (Fiber)
-l1f=l.lines(geo.mooring_line_fiber,k_fiber,0.160)
-l1.assign_length(20.0)
+chain_line=l.lines(geo.mooring_line_chain,k_chain,0.088)   # Axial stiffness[MN] 680.81 (Chain) 235.44 (Fiber)
+fiber_line=l.lines(geo.mooring_line_fiber,k_fiber,0.160)
+
+chain_line.assign_length(20.0)
+fiber_line.assign_length(20.0)
 
 ## setting
 fixed_point =  geo.fixed_point          # anchor point
@@ -37,16 +39,13 @@ fixed_point += geo.body_attached_point  # fish cage body
 
 gravity=np.array([0,0,-9.81])
 mass_matrix = np.array(geo.mass_mooring_line_new).reshape(len(geo.mass_mooring_line_new),1)
-print(len(mass_matrix))
 total_time = [5,25,50,75,100,150,200,250,300]       # Total simulation runn time, unit [s]
-dt = 1.0e-4                         # Time steps, unit [s]
 
 all_forces={'FV1':[],'FV2':[],'FV3':[],'FV4':[],'FV5':[],'FV6':[],'FV7':[],'FV0':[]}
 
 ## initialization 
 position=np.array(nodes)
 velocity=np.zeros_like(position)
-run_time=total_time[6]
 
 BP1 = num_seg                       # Body attached point of fairlead 1 location
 ML1a = BP1 - 1                      # 1st point on mooring line 1
@@ -64,21 +63,26 @@ ML4b = BP1 + num_seg                # 1st point on mooring line 8
 BP_14=[BP1,BP2,BP3,BP4]
 ML_18=[ML1a,ML1b,ML2a,ML2b,ML3a,ML3b,ML4a,ML4b]
     
+run_time=total_time[6]
+dt = 1.0e-4                         # Time steps, unit [s]
 
 for i in range(int(run_time/dt)):       
-    if i % 400 == 0: # write result for 25 frames per second  
-        print((dt*i))
+    if i % 400 == 0:                # Write vtk result per 0.04s, 25fps
         sv.write_line_vtk("ami2/"+str(run_time)+"W"+str(dt) + "mooring_line"+str(i),point=position.tolist(),line=line)
-            
-    ### forward Euler (explicit)
-    
-    ## external loads
+    if i % 100 == 0:                # Write force result per 0.01s
+        for j in range(8):
+            force= k_fiber*(np.linalg.norm(position[BP_14[j//2]]-position[ML_18[j]])-seg_length)    # Calculate force magnitude by mooring line 1
+            forceVector = np.array(position[BP_14[j//2]])-np.array(position[ML_18[j]])              # Calculate line vector of BP1 to ML1
+            force_unit_vector=forceVector/np.linalg.norm(forceVector)
+            all_forces['FV'+str(j)].append(force*force_unit_vector)
+
+    ### Forward Euler (Explicit)
+    ## External loads
     pre_position=position.copy()
     
-    # gravity force
+    # Gravity force
     velocity += dt*gravity
     
-
     ## boundary condition
     velocity[fixed_point] *= 0.0  # velocity restriction
     velocity[position[:,2]<-150]*=np.array([1,1,0])# ground
@@ -86,18 +90,12 @@ for i in range(int(run_time/dt)):
     position[fixed_point]=np.array(nodes)[fixed_point]
     
     ### constraint function 
-    position+=l1.pbd_edge_constraint(position,mass_matrix,dt)
+    position+=chain_line.pbd_edge_constraint(position,mass_matrix,dt)
+    position+=fiber_line.pbd_edge_constraint(position,mass_matrix,dt)
     
     ### velocity correction
     velocity=(position-pre_position)/dt
     
-    for i in range(8):
 
-        force= k_fiber*(np.linalg.norm(position[BP_14[i//2]]-position[ML_18[i]])-seg_length)    # Calculate force magnitude by mooring line 1
-        forceVector = np.array(position[BP_14[i//2]])-np.array(position[ML_18[i]])         # Calculate line vector of BP1 to ML1
-        force_unit_vector=forceVector/np.linalg.norm(forceVector)
-        all_forces['FV'+str(i)].append(force*force_unit_vector)
-        
-    
 np.save('all_force.npy',all_forces)
 np.savetxt('position.txt',position)

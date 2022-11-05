@@ -222,93 +222,31 @@ for i in range(8):
 
 mooring_line_new=[]
 #TODO remofe the fixed point list
-fixed_point=fixed_point = [0, (1*num_seg)+1, (2*num_seg)+1, (3*num_seg)+2, (4*num_seg)+2, (5*num_seg)+3, (6*num_seg)+3, (7*num_seg)+4]  # anchor point
+fixed_point= [0, (1*num_seg)+1, (2*num_seg)+1, (3*num_seg)+2, (4*num_seg)+2, (5*num_seg)+3, (6*num_seg)+3, (7*num_seg)+4]  # anchor point
 body_attached_point=[num_seg+(2*num_seg+1)*i for i in range(4)]
+
 for i in range(8):
     for j in range(num_seg-1): # per each mooring line
         mooring_line_new.append([fixed_point[i]+j,fixed_point[i]+j+1])
     mooring_line_new.append([fixed_point[i]+j+1,body_attached_point[i//2]])
 
-mooring_line_fiber = [[100,101],
-                      [101,102],
-                      [102,103],
-                      [103,104],
-                      [104,105],
-                      [105,106],
-                      [106,107],
-                      [107,108],
-                      [108,109],
-                      [109,110],
-                      [211,212],
-                      [212,213],
-                      [213,214],
-                      [214,215],
-                      [215,216],
-                      [216,217],
-                      [217,218],
-                      [218,219],
-                      [219,220],
-                      [220,110],
-                      [321,322],
-                      [322,323],
-                      [323,324],
-                      [324,325],
-                      [325,326],
-                      [326,327],
-                      [327,328],
-                      [328,329],
-                      [329,330],
-                      [330,331],
-                      [432,433],
-                      [433,434],
-                      [434,435],
-                      [435,436],
-                      [436,437],
-                      [437,438],
-                      [438,439],
-                      [439,440],
-                      [440,441],
-                      [441,331],
-                      [542,543],
-                      [543,544],
-                      [544,545],
-                      [545,546],
-                      [546,547],
-                      [547,548],
-                      [548,549],
-                      [549,550],
-                      [550,551],
-                      [551,552],
-                      [653,654],
-                      [654,655],
-                      [655,656],
-                      [656,657],
-                      [657,658],
-                      [658,659],
-                      [659,660],
-                      [660,661],
-                      [661,662],
-                      [662,552],
-                      [763,764],
-                      [764,765],
-                      [765,766],
-                      [766,767],
-                      [767,768],
-                      [768,769],
-                      [769,770],
-                      [770,771],
-                      [771,772],
-                      [772,773],
-                      [874,875],
-                      [875,876],
-                      [876,877],
-                      [877,878],
-                      [878,879],
-                      [879,880],
-                      [880,881],
-                      [881,882],
-                      [882,883],
-                      [883,773]]
+mooring_line_fiber =[]
+num_p=num_seg*2+1
+for j in range(4):
+    for i in range(5):
+        mooring_line_fiber.append([num_seg-i+num_p*j,num_seg-1-i+num_p*j])
+    mooring_line_fiber.append([num_seg+num_p*j,2*num_seg+num_p*j])
+    for i in range(4):
+        mooring_line_fiber.append([2*num_seg-i+num_p*j,2*num_seg-1-i+num_p*j])
+
+mooring_line_chain=[]
+for j in range(4):
+    for i in range(50):
+        mooring_line_chain.append([i+num_p*j,i+1+num_p*j])
+    for i in range(50):
+        mooring_line_chain.append([num_seg+1+i+num_p*j,num_seg+1+i+1+num_p*j])
+
+
 
 ### MASS MATRIX STR ###
 
@@ -1270,7 +1208,22 @@ mass_matrix = [[1622804.1481], # point mass for control building shared with nod
                [1470.0000],
                [1470.0000]]
 
-mass_mooring_line_new = [147*20]*51+[4*20]*5+[147*20]*51+[4*20]*4+[147*20]*51+[4*20]*5+[147*20]*51+[4*20]*4+[147*20]*51+[4*20]*5+[147*20]*51+[4*20]*4+[147*20]*51+[4*20]*5+[147*20]*51+[4*20]*4
+mass_mooring_line_new = [147*10]
+mass_mooring_line_new+=[147*20]*49
+mass_mooring_line_new+=[147*10+4*10]
+mass_mooring_line_new+=[4*20]*5
+mass_mooring_line_new+=[147*10]
+mass_mooring_line_new+=[147*20]*49
+mass_mooring_line_new+=[147*10+4*10]
+mass_mooring_line_new+=[4*20]*4
+
+mass_mooring_line_new+=mass_mooring_line_new
+mass_mooring_line_new+=mass_mooring_line_new
+
+
+
+
+
 
 mass_mooring_line   = [40,
                        40,
