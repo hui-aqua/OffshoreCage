@@ -15,10 +15,10 @@ sv.write_vtk("initial_mooring_line",point=nodes,line=line)
 sv.write_vtk("initial_cage",point=geo.nodes,line=geo.all_line,face=geo.netFace)
 
 # define structural properties
-seg_length = 1100/num_seg #total length of mooring is 1100 m 
+seg_length = 1100.0/num_seg #total length of mooring is 1100 m 
 
-E_fiber = 11.7e9 
-A_fiber = 0.020103051
+# E_fiber = 11.7e9   # question? where these values from
+# A_fiber = 0.020103051
 EA_fiber=235e6
 k_fiber = EA_fiber/seg_length
 
@@ -30,8 +30,8 @@ k_chain = EA_chain/seg_length
 chain_line=l.lines(geo.mooring_line_chain,k_chain,0.088)   # Axial stiffness[MN] 680.81 (Chain) 235.44 (Fiber)
 fiber_line=l.lines(geo.mooring_line_fiber,k_fiber,0.160)
 
-chain_line.assign_length(20.0)
-fiber_line.assign_length(20.0)
+chain_line.assign_length(seg_length)
+fiber_line.assign_length(seg_length)
 
 ## setting
 fixed_point =  geo.fixed_point          # anchor point
