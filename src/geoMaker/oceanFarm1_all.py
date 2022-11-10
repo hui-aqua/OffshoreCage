@@ -221,15 +221,10 @@ for i in range(8):
         mooring_line.append([i*num_seg+num_body_point+j,i*num_seg+num_body_point+j+1])
     mooring_line.append([i*num_seg+num_body_point+j+1,attached_point[i]])
 
-mooring_line_new=[]
-#TODO remofe the fixed point list
+
 fixed_point= [0, (1*num_seg)+1, (2*num_seg)+1, (3*num_seg)+2, (4*num_seg)+2, (5*num_seg)+3, (6*num_seg)+3, (7*num_seg)+4]  # anchor point
 body_attached_point=[num_seg+(2*num_seg+1)*i for i in range(4)]
 
-for i in range(8):
-    for j in range(num_seg-1): # per each mooring line
-        mooring_line_new.append([fixed_point[i]+j,fixed_point[i]+j+1])
-    mooring_line_new.append([fixed_point[i]+j+1,body_attached_point[i//2]])
 
 mooring_line_fiber =[]
 num_p=num_seg*2+1
