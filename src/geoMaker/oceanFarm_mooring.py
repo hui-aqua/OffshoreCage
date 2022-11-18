@@ -25,6 +25,9 @@ def generate_model(num_seg=110):
     # num_seg should be an integer and at least be 11. 
     # can also be 55,110,220 for this study.
     # the position of nodes, element and fixed position are return in this function
+    if num_seg%22 !=0:
+        print("please check num_seg")
+        exit()
     
     mooring_line_point=[]
     for i in range(8):
