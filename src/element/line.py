@@ -14,6 +14,7 @@ class lines:
         self.number_of_line=len(index)
         self.initial_line_length=0
         self.dw0=dw0
+        
     # private function 
 
     def __calc_lengths(self,point_position:np.array):
@@ -44,7 +45,7 @@ class lines:
             self.initial_line_length = input_value
         elif type(input_value) ==type(4.2):
             self.initial_line_length = self.number_of_line*[input_value]
-        
+        self.line_length=self.initial_line_length
         return np.mean(self.initial_line_length)
         
     
@@ -81,7 +82,8 @@ class lines:
         #print(w.shape)
         #print(w.shape)
         w1_w2=w[self.np_index[:,0]]+w[self.np_index[:,1]]
-        C=line_length-self.initial_line_length   
+        C=line_length-self.initial_line_length
+        # C[C<0]*=0.0
         s=C.reshape(len(C),1)/(w1_w2+alpha)
 
         position_correction=np.zeros_like(point_position)
