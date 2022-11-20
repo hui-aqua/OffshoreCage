@@ -77,7 +77,7 @@ class lines:
     
     def pbd_edge_constraint(self,point_position:np.array,point_mass:np.array,dt:float):
         line_length=self.__calc_lengths(point_position)
-        alpha=1.0/self.k/ dt /dt
+        alpha=1.0/self.k/ dt /dt  # compliance
         w=1.0/point_mass
         #print(w.shape)
         #print(w.shape)
@@ -86,7 +86,8 @@ class lines:
         # C[C<0]*=0.0
         s=C.reshape(len(C),1)/(w1_w2+alpha)
 
-        position_correction=np.zeros_like(point_position)
+        position_correction=np.zeros_like(point_position) 
+        # Jocobi method.
         position_correction[self.np_index[:,0]]+= self.unit_vector*s*w[self.np_index[:,0]]
         position_correction[self.np_index[:,1]]+=-self.unit_vector*s*w[self.np_index[:,1]]
         return position_correction
